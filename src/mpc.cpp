@@ -272,8 +272,7 @@ namespace mpc {
         // can uncomment 1 of these and see if it makes a difference or not but
         // if you uncomment both the computation time should go up in orders of
         // magnitude.
-        options +=
-            "String  sb          yes\n"; // Disables printing IPOPT creator banner
+        options += "String  sb          yes\n"; // Disable IPOPT banner
         options += "Sparse  true        forward\n";
         options += "Sparse  true        reverse\n";
         // NOTE: Currently the solver has a maximum time limit of 0.5 seconds.
