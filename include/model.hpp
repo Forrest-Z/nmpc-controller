@@ -1,16 +1,16 @@
 /**
  * Copyright (c) 2021 Ashwin A Nayar
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,8 +24,7 @@
 
 #include <vector>
 
-namespace model
-{
+namespace model {
     /**
      * Struct for holding the state info of the model at a given time
      */
@@ -42,14 +41,14 @@ namespace model
 
         /**
          * Set the sample time for each step of the model
-         * 
+         *
          * @param sampletime: The sampletime
          */
         void setSampleTime(double sampletime);
 
         /**
          * Update the model state by one timestep
-         * 
+         *
          * @param speed: The speed of the model
          * @param omega: The angular velocity
          */
@@ -57,7 +56,7 @@ namespace model
 
         /**
          * Get current state of the model
-         * 
+         *
          * @return Current state
          */
         State getState() const;

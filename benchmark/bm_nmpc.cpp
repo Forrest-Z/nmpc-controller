@@ -1,16 +1,16 @@
 /**
  * Copyright (c) 2021 Ashwin A Nayar
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -85,7 +85,8 @@ static void BM_NMPCloop(benchmark::State &bmState)
     double *ptry = &ptsy[0];
     Eigen::Map<Eigen::VectorXd> ptsy_transform(ptry, 6);
 
-    const Eigen::VectorXd &coeffs = mpc::utils::polyfit(ptsx_transform, ptsy_transform, 3);
+    const Eigen::VectorXd &coeffs =
+        mpc::utils::polyfit(ptsx_transform, ptsy_transform, 3);
 
     double cte = mpc::utils::polyeval(coeffs, 0);
     double etheta = -atan(coeffs[1]);
@@ -99,7 +100,8 @@ static void BM_NMPCloop(benchmark::State &bmState)
     double current_etheta = etheta - current_theta;
 
     Eigen::VectorXd model_state(6);
-    model_state << current_px, current_py, current_theta, current_v, current_cte, current_etheta;
+    model_state << current_px, current_py, current_theta, current_v, current_cte,
+        current_etheta;
 
     mpc::MPC _mpc(params, coeffs);
 

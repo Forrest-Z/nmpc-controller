@@ -1,16 +1,16 @@
 /**
  * Copyright (c) 2021 Ashwin A Nayar
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -22,11 +22,10 @@
 
 #include "mpc.hpp"
 
-#include <eigen3/Eigen/QR>
 #include <cppad/ipopt/solve.hpp>
+#include <eigen3/Eigen/QR>
 
-namespace mpc::utils
-{
+namespace mpc::utils {
     double polyeval(const Eigen::VectorXd &coeffs, double x)
     {
         double result = 0.0;
@@ -37,7 +36,8 @@ namespace mpc::utils
         return result;
     }
 
-    Eigen::VectorXd polyfit(const Eigen::VectorXd &xvals, const Eigen::VectorXd &yvals, int order)
+    Eigen::VectorXd polyfit(const Eigen::VectorXd &xvals,
+                            const Eigen::VectorXd &yvals, int order)
     {
         assert(xvals.size() == yvals.size());
         assert(order >= 1 && order <= xvals.size() - 1);
@@ -56,11 +56,8 @@ namespace mpc::utils
     }
 } // namespace mpc::utils
 
-namespace mpc
-{
-    Params::Params() : BOUND_VALUE(1.0e3)
-    {
-    }
+namespace mpc {
+    Params::Params() : BOUND_VALUE(1.0e3) {}
 
     VarIndices::VarIndices(size_t timesteps)
     {
@@ -74,19 +71,17 @@ namespace mpc
         acc_start = omega_start + timesteps - 1;
     }
 
-    MPC::MPC(const Params &params, const Eigen::VectorXd &coeffs) : m_Params(params),
-                                                                    m_Coeffs(coeffs),
-                                                                    m_VarIndices(params.forward.timesteps)
+    MPC::MPC(const Params &params, const Eigen::VectorXd &coeffs) :
+        m_Params(params), m_Coeffs(coeffs), m_VarIndices(params.forward.timesteps)
     {
     }
 
-    MPC::~MPC()
-    {
-    }
+    MPC::~MPC() {}
 
     void MPC::operator()(ADvector &fg, const ADvector &vars) const
     {
-        // `fg` a vector of the cost constraints, `vars` is a vector of variable values (state & actuators)
+        // `fg` a vector of the cost constraints, `vars` is a vector of variable
+        // values (state & actuators)
 
         // The cost is stored is the first element of `fg`.
         // Any additions to the cost should be added to `fg[0]`.
@@ -95,20 +90,35 @@ namespace mpc
         // Reference State Cost
         for (size_t t = 0; t < m_Params.forward.timesteps; t++)
         {
-            fg[0] += m_Params.weights.cte * CppAD::pow(vars[m_VarIndices.cte_start + t] - m_Params.desired.cte, 2);
-            fg[0] += m_Params.weights.etheta * CppAD::pow(vars[m_VarIndices.etheta_start + t] - m_Params.desired.etheta, 2);
-            fg[0] += m_Params.weights.vel * CppAD::pow(vars[m_VarIndices.v_start + t] - m_Params.desired.vel, 2);
+            fg[0] += m_Params.weights.cte *
+                     CppAD::pow(
+                         vars[m_VarIndices.cte_start + t] - m_Params.desired.cte, 2);
+            fg[0] += m_Params.weights.etheta *
+                     CppAD::pow(vars[m_VarIndices.etheta_start + t] -
+                                    m_Params.desired.etheta,
+                                2);
+            fg[0] +=
+                m_Params.weights.vel *
+                CppAD::pow(vars[m_VarIndices.v_start + t] - m_Params.desired.vel, 2);
         }
         for (size_t t = 0; t < m_Params.forward.timesteps - 1; t++)
         {
-            fg[0] += m_Params.weights.omega * CppAD::pow(vars[m_VarIndices.omega_start + t], 2);
-            fg[0] += m_Params.weights.acc * CppAD::pow(vars[m_VarIndices.acc_start + t], 2);
+            fg[0] += m_Params.weights.omega *
+                     CppAD::pow(vars[m_VarIndices.omega_start + t], 2);
+            fg[0] += m_Params.weights.acc *
+                     CppAD::pow(vars[m_VarIndices.acc_start + t], 2);
         }
         // Smoother transitions (less jerks)
         for (size_t t = 0; t < m_Params.forward.timesteps - 2; t++)
         {
-            fg[0] += m_Params.weights.acc_d * CppAD::pow(vars[m_VarIndices.acc_start + t + 1] - vars[m_VarIndices.acc_start + t], 2);
-            fg[0] += m_Params.weights.omega_d * CppAD::pow(vars[m_VarIndices.omega_start + t + 1] - vars[m_VarIndices.omega_start + t], 2);
+            fg[0] += m_Params.weights.acc_d *
+                     CppAD::pow(vars[m_VarIndices.acc_start + t + 1] -
+                                    vars[m_VarIndices.acc_start + t],
+                                2);
+            fg[0] += m_Params.weights.omega_d *
+                     CppAD::pow(vars[m_VarIndices.omega_start + t + 1] -
+                                    vars[m_VarIndices.omega_start + t],
+                                2);
         }
         //
         // Setup Constraints
@@ -150,7 +160,8 @@ namespace mpc
             CppAD::AD<double> a0 = vars[m_VarIndices.acc_start + t];
 
             CppAD::AD<double> f0 = 0.0;
-            // CppAD::pow() takes second parameter as const int&, putting counter datatype as size_t throws error
+            // CppAD::pow() takes second parameter as const int&, putting counter
+            // datatype as size_t throws error
             for (int i = 0; i < m_Coeffs.size(); i++)
                 f0 += m_Coeffs[i] * CppAD::pow(x0, i);
 
@@ -166,13 +177,19 @@ namespace mpc
             // This is also CppAD can compute derivatives and pass
             // these to the solver.
 
-            fg[2 + m_VarIndices.x_start + t] = x1 - (x0 + v0 * CppAD::cos(theta0) * m_Params.forward.dt);
-            fg[2 + m_VarIndices.y_start + t] = y1 - (y0 + v0 * CppAD::sin(theta0) * m_Params.forward.dt);
-            fg[2 + m_VarIndices.theta_start + t] = theta1 - (theta0 + w0 * m_Params.forward.dt);
+            fg[2 + m_VarIndices.x_start + t] =
+                x1 - (x0 + v0 * CppAD::cos(theta0) * m_Params.forward.dt);
+            fg[2 + m_VarIndices.y_start + t] =
+                y1 - (y0 + v0 * CppAD::sin(theta0) * m_Params.forward.dt);
+            fg[2 + m_VarIndices.theta_start + t] =
+                theta1 - (theta0 + w0 * m_Params.forward.dt);
             fg[2 + m_VarIndices.v_start + t] = v1 - (v0 + a0 * m_Params.forward.dt);
 
-            fg[2 + m_VarIndices.cte_start + t] = cte1 - ((f0 - y0) + (v0 * CppAD::sin(etheta0) * m_Params.forward.dt));
-            fg[2 + m_VarIndices.etheta_start + t] = etheta1 - ((theta0 - traj_grad0) + w0 * m_Params.forward.dt);
+            fg[2 + m_VarIndices.cte_start + t] =
+                cte1 -
+                ((f0 - y0) + (v0 * CppAD::sin(etheta0) * m_Params.forward.dt));
+            fg[2 + m_VarIndices.etheta_start + t] =
+                etheta1 - ((theta0 - traj_grad0) + w0 * m_Params.forward.dt);
         }
     }
 
@@ -188,7 +205,8 @@ namespace mpc
         const double cte = state[4];
         const double etheta = state[5];
 
-        const size_t n_vars = 6 * m_Params.forward.timesteps + 2 * (m_Params.forward.timesteps - 1);
+        const size_t n_vars =
+            6 * m_Params.forward.timesteps + 2 * (m_Params.forward.timesteps - 1);
         const size_t n_constraints = 6 * m_Params.forward.timesteps;
 
         // Initial value of the independent variables.
@@ -254,7 +272,8 @@ namespace mpc
         // can uncomment 1 of these and see if it makes a difference or not but
         // if you uncomment both the computation time should go up in orders of
         // magnitude.
-        options += "String  sb          yes\n"; // Disables printing IPOPT creator banner
+        options +=
+            "String  sb          yes\n"; // Disables printing IPOPT creator banner
         options += "Sparse  true        forward\n";
         options += "Sparse  true        reverse\n";
         // NOTE: Currently the solver has a maximum time limit of 0.5 seconds.
@@ -264,14 +283,15 @@ namespace mpc
         // place to return solution
         CppAD::ipopt::solve_result<Dvector> solution;
 
-        CppAD::ipopt::solve(
-            options, vars, vars_lowerbound, vars_upperbound, constraints_lowerbound,
-            constraints_upperbound, *this, solution);
+        CppAD::ipopt::solve(options, vars, vars_lowerbound, vars_upperbound,
+                            constraints_lowerbound, constraints_upperbound, *this,
+                            solution);
 
         ok &= solution.status == CppAD::ipopt::solve_result<Dvector>::success;
 
         if (!ok)
-            std::cout << "IPOPT returned unsuccessful solve. Code: " << solution.status << std::endl;
+            std::cout << "IPOPT returned unsuccessful solve. Code: "
+                      << solution.status << std::endl;
 
         // Cost
         // std::cout << "COST  : " << solution.obj_value << std::endl;
